@@ -685,6 +685,32 @@ class Colorlib_Login_Customizer_Customizer {
 					'active_callback' => array( $this, 'check_two_column_layout' ),
 				),
 				array(
+					'id'          => 'background-blur',
+					'label'       => esc_html__( 'Background blur', 'colorlib-login-customizer' ),
+					'description' => esc_html__( 'Blur the background image, in pixels. 0 = no blur.', 'colorlib-login-customizer' ),
+					'type'        => 'clc-range-slider',
+					'default'     => 0,
+					'choices'     => array(
+						'min'  => 0,
+						'max'  => 30,
+						'step' => 1,
+					),
+					'transport'   => 'refresh',
+				),
+				array(
+					'id'          => 'background-brightness',
+					'label'       => esc_html__( 'Background brightness', 'colorlib-login-customizer' ),
+					'description' => esc_html__( 'Adjust the background brightness. 100% = original.', 'colorlib-login-customizer' ),
+					'type'        => 'clc-range-slider',
+					'default'     => 100,
+					'choices'     => array(
+						'min'  => 0,
+						'max'  => 200,
+						'step' => 5,
+					),
+					'transport'   => 'refresh',
+				),
+				array(
 					'id'              => 'custom-background-form',
 					'label'           => esc_html__( 'Form Column background', 'colorlib-login-customizer' ),
 					'description'     => esc_html__( 'This will upload an image to your media library and store the attachment ID in the option field. Once you have uploaded an imge the thumbnail will display above these buttons.', 'colorlib-login-customizer' ),
@@ -1004,6 +1030,13 @@ class Colorlib_Login_Customizer_Customizer {
 					'default'     => '#ffffff',
 				),
 				array(
+					'id'          => 'button-width',
+					'label'       => esc_html__( 'Button width', 'colorlib-login-customizer' ),
+					'description' => esc_html__( 'Width of the submit button. Example: 200px, 100%, or auto.', 'colorlib-login-customizer' ),
+					'type'        => 'text',
+					'default'     => '',
+				),
+				array(
 					'id'          => 'link-color',
 					'label'       => esc_html__( 'Link color', 'colorlib-login-customizer' ),
 					'description' => esc_html__( 'This will change the text color of links that are underneath the login form', 'colorlib-login-customizer' ),
@@ -1023,6 +1056,93 @@ class Colorlib_Login_Customizer_Customizer {
 					'description' => esc_html__( 'Show/Hide the "Remember Me" checkbox', 'colorlib-login-customizer' ),
 					'type'        => 'clc-toggle',
 					'default'     => 0,
+				),
+			),
+		);
+
+		$settings['footer-links'] = array(
+			'title'       => esc_html__( 'Footer &amp; Links', 'colorlib-login-customizer' ),
+			'description' => esc_html__( 'Add custom text and links around the login form, and hide the default footer items.', 'colorlib-login-customizer' ),
+			'fields'      => array(
+				array(
+					'id'          => 'above-form-text',
+					'label'       => esc_html__( 'Text above form', 'colorlib-login-customizer' ),
+					'description' => esc_html__( 'Custom text or HTML shown above the login form.', 'colorlib-login-customizer' ),
+					'type'        => 'textarea',
+					'default'     => '',
+					'transport'   => 'refresh',
+				),
+				array(
+					'id'          => 'footer-text',
+					'label'       => esc_html__( 'Footer text', 'colorlib-login-customizer' ),
+					'description' => esc_html__( 'Custom text or HTML shown below the login form.', 'colorlib-login-customizer' ),
+					'type'        => 'textarea',
+					'default'     => '',
+					'transport'   => 'refresh',
+				),
+				array(
+					'id'          => 'footer-link-1-text',
+					'label'       => esc_html__( 'Footer link 1 text', 'colorlib-login-customizer' ),
+					'description' => esc_html__( 'For example: Imprint, Privacy Policy, Terms. Leave empty to skip.', 'colorlib-login-customizer' ),
+					'type'        => 'text',
+					'default'     => '',
+					'transport'   => 'refresh',
+				),
+				array(
+					'id'          => 'footer-link-1-url',
+					'label'       => esc_html__( 'Footer link 1 URL', 'colorlib-login-customizer' ),
+					'description' => '',
+					'type'        => 'url',
+					'default'     => '',
+					'transport'   => 'refresh',
+				),
+				array(
+					'id'          => 'footer-link-2-text',
+					'label'       => esc_html__( 'Footer link 2 text', 'colorlib-login-customizer' ),
+					'description' => '',
+					'type'        => 'text',
+					'default'     => '',
+					'transport'   => 'refresh',
+				),
+				array(
+					'id'          => 'footer-link-2-url',
+					'label'       => esc_html__( 'Footer link 2 URL', 'colorlib-login-customizer' ),
+					'description' => '',
+					'type'        => 'url',
+					'default'     => '',
+					'transport'   => 'refresh',
+				),
+				array(
+					'id'          => 'footer-link-3-text',
+					'label'       => esc_html__( 'Footer link 3 text', 'colorlib-login-customizer' ),
+					'description' => '',
+					'type'        => 'text',
+					'default'     => '',
+					'transport'   => 'refresh',
+				),
+				array(
+					'id'          => 'footer-link-3-url',
+					'label'       => esc_html__( 'Footer link 3 URL', 'colorlib-login-customizer' ),
+					'description' => '',
+					'type'        => 'url',
+					'default'     => '',
+					'transport'   => 'refresh',
+				),
+				array(
+					'id'          => 'hide-privacy-link',
+					'label'       => esc_html__( 'Hide privacy policy link', 'colorlib-login-customizer' ),
+					'description' => esc_html__( 'Hides the WordPress privacy policy link in the login footer.', 'colorlib-login-customizer' ),
+					'type'        => 'clc-toggle',
+					'default'     => 0,
+					'transport'   => 'refresh',
+				),
+				array(
+					'id'          => 'hide-language-switcher',
+					'label'       => esc_html__( 'Hide language switcher', 'colorlib-login-customizer' ),
+					'description' => esc_html__( 'Hides the language selector that appears when more than one language is installed.', 'colorlib-login-customizer' ),
+					'type'        => 'clc-toggle',
+					'default'     => 0,
+					'transport'   => 'refresh',
 				),
 			),
 		);
@@ -1121,6 +1241,7 @@ class Colorlib_Login_Customizer_Customizer {
 					'form-width',
 					'form-height',
 					'form-field-width',
+					'button-width',
 				);
 				if ( isset( $setting['id'] ) && in_array( $setting['id'], $dimension_fields, true ) ) {
 					return 'clc_sanitize_dimension';
@@ -1159,7 +1280,7 @@ class Colorlib_Login_Customizer_Customizer {
 				$key_name      = $this->generate_name( $setting['id'] );
 				$settings_args = array(
 					'type'              => 'option',
-					'transport'         => 'postMessage',
+					'transport'         => isset( $setting['transport'] ) ? $setting['transport'] : 'postMessage',
 					'sanitize_callback' => $this->get_sanitize_callback( $setting ),
 				);
 

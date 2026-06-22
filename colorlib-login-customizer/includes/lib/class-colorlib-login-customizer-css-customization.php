@@ -64,6 +64,19 @@ class Colorlib_Login_Customizer_CSS_Customization {
 		add_action( 'login_header', array( $this, 'add_extra_div' ) );
 		add_action( 'login_head', array( $this, 'generate_css' ), 15 );
 		add_action( 'login_footer', array( $this, 'close_extra_div' ) );
+
+		// Footer & Links: custom text above the form and a custom footer below it.
+		add_action( 'login_header', array( $this, 'render_above_form' ), 11 );
+		add_action( 'login_footer', array( $this, 'render_footer' ), 5 );
+
+		// Footer & Links: optionally hide the core privacy-policy link and language switcher.
+		if ( ! empty( $this->options['hide-privacy-link'] ) ) {
+			add_filter( 'the_privacy_policy_link', '__return_empty_string' );
+		}
+
+		if ( ! empty( $this->options['hide-language-switcher'] ) ) {
+			add_filter( 'login_display_language_dropdown', '__return_false' );
+		}
 		add_filter( 'login_body_class', array( $this, 'body_class' ) );
 		add_filter( 'login_headerurl', array( $this, 'logo_url' ), 99 );
 		add_filter( 'login_headertext', array( $this, 'logo_title' ), 99 );
@@ -136,6 +149,7 @@ class Colorlib_Login_Customizer_CSS_Customization {
 					'box-shadow',
 					'text-shadow',
 					'color',
+					'width',
 				),
 				'options'    => array(
 					'button-background',
@@ -143,6 +157,7 @@ class Colorlib_Login_Customizer_CSS_Customization {
 					'button-shadow',
 					'button-text-shadow',
 					'button-color',
+					'button-width',
 				),
 			),
 			'.login #backtoblog a, .login #nav a'        => array(
@@ -171,7 +186,7 @@ class Colorlib_Login_Customizer_CSS_Customization {
 			),
 			'#loginform,#registerform,#lostpasswordform' => array(
 				'attributes' => array(
-					'height',
+					'min-height',
 					'background-image',
 					'background-color',
 					'padding',
@@ -316,11 +331,38 @@ class Colorlib_Login_Customizer_CSS_Customization {
 		 * Start building the CSS file
 		 */
 		$string .= $this->_set_background_options();
+		$string .= $this->_set_background_filter();
 		$string .= $this->_set_logo_options();
 		$string .= $this->_set_form_options();
 		$string .= $this->_set_miscellaneous_options();
 
 		return $string;
+	}
+
+	/**
+	 * Build the CSS filter (blur + brightness) applied to the background image.
+	 *
+	 * @return string
+	 */
+	public function _set_background_filter() {
+		$blur       = isset( $this->options['background-blur'] ) ? absint( $this->options['background-blur'] ) : 0;
+		$brightness = isset( $this->options['background-brightness'] ) ? absint( $this->options['background-brightness'] ) : 100;
+
+		$filters = array();
+
+		if ( $blur > 0 ) {
+			$filters[] = 'blur(' . $blur . 'px)';
+		}
+
+		if ( 100 !== $brightness ) {
+			$filters[] = 'brightness(' . $brightness . '%)';
+		}
+
+		if ( empty( $filters ) ) {
+			return '';
+		}
+
+		return '.ml-container .ml-extra-div{filter:' . implode( ' ', $filters ) . ';}';
 	}
 
 	/**
@@ -351,6 +393,7 @@ class Colorlib_Login_Customizer_CSS_Customization {
 				'box-shadow',
 				'text-shadow',
 				'color',
+				'width',
 			),
 			array(
 				'button-background',
@@ -358,6 +401,7 @@ class Colorlib_Login_Customizer_CSS_Customization {
 				'button-shadow',
 				'button-text-shadow',
 				'button-color',
+				'button-width',
 			)
 		);
 
@@ -418,7 +462,7 @@ class Colorlib_Login_Customizer_CSS_Customization {
 		$string .= $this->create_css_lines(
 			'#loginform,#registerform,#lostpasswordform',
 			array(
-				'height',
+				'min-height',
 				'background-image',
 				'background-color',
 				'padding',
@@ -685,7 +729,11 @@ class Colorlib_Login_Customizer_CSS_Customization {
 			case 'min-height':
 			case 'max-height':
 			case 'font-size':
-				$value = $value . 'px';
+				// Append px only to bare numbers, so values that already carry a
+				// unit or keyword (e.g. 100%, auto) are passed through unchanged.
+				if ( is_numeric( $value ) ) {
+					$value = $value . 'px';
+				}
 				break;
 			case 'display':
 				if ( ! $value ) {
@@ -872,6 +920,74 @@ class Colorlib_Login_Customizer_CSS_Customization {
 	 */
 	public function close_extra_div() {
 		echo '</div></div>';
+	}
+
+	/**
+	 * Output custom text/HTML above the login form.
+	 *
+	 * Hooked late on login_header so it renders inside the form container, just
+	 * above the #login box.
+	 *
+	 * @return void
+	 */
+	public function render_above_form() {
+		$content = isset( $this->options['above-form-text'] ) ? trim( (string) $this->options['above-form-text'] ) : '';
+
+		if ( '' === $content ) {
+			return;
+		}
+
+		echo '<div class="clc-above-form">' . wp_kses_post( $content ) . '</div>';
+	}
+
+	/**
+	 * Output a custom footer (links + free text) below the login form.
+	 *
+	 * Hooked early on login_footer so it renders inside the form container,
+	 * before the wrapper is closed.
+	 *
+	 * @return void
+	 */
+	public function render_footer() {
+		$footer = isset( $this->options['footer-text'] ) ? trim( (string) $this->options['footer-text'] ) : '';
+		$links  = array();
+
+		for ( $i = 1; $i <= 3; $i++ ) {
+			$text = isset( $this->options[ 'footer-link-' . $i . '-text' ] ) ? trim( (string) $this->options[ 'footer-link-' . $i . '-text' ] ) : '';
+			$url  = isset( $this->options[ 'footer-link-' . $i . '-url' ] ) ? trim( (string) $this->options[ 'footer-link-' . $i . '-url' ] ) : '';
+
+			if ( '' !== $text && '' !== $url ) {
+				$links[] = array(
+					'text' => $text,
+					'url'  => $url,
+				);
+			}
+		}
+
+		if ( '' === $footer && empty( $links ) ) {
+			return;
+		}
+
+		echo '<div class="clc-custom-footer">';
+
+		if ( ! empty( $links ) ) {
+			echo '<p class="clc-footer-links">';
+			$first = true;
+			foreach ( $links as $link ) {
+				if ( ! $first ) {
+					echo ' <span class="clc-footer-sep">&middot;</span> ';
+				}
+				echo '<a href="' . esc_url( $link['url'] ) . '">' . esc_html( $link['text'] ) . '</a>';
+				$first = false;
+			}
+			echo '</p>';
+		}
+
+		if ( '' !== $footer ) {
+			echo '<div class="clc-footer-text">' . wp_kses_post( $footer ) . '</div>';
+		}
+
+		echo '</div>';
 	}
 
 	/**
@@ -1324,18 +1440,49 @@ class Colorlib_Login_Customizer_CSS_Customization {
 			z-index:9;
 			margin:0;
 		}
-		/* #173: keep WordPress core language switcher centered below the form
-		   instead of letting it sit beside #login as a flex sibling. */
-		.ml-container .ml-form-container{
+		/* Footer & Links (#173 too): give the custom above-form text, custom footer,
+		   the core language switcher and the privacy-policy link their own full-width
+		   rows so they stack centered around the form instead of sitting beside
+		   #login as flex siblings (.ml-form-container also gets flex-wrap below). */
+		.ml-form-container > .clc-above-form,
+		.ml-form-container > .clc-custom-footer,
+		.ml-form-container > .language-switcher,
+		.ml-form-container > .privacy-policy-page-link{
+			flex:0 0 100%;
+			max-width:100%;
+			text-align:center;
+			/* Stack above the absolute .ml-extra-div background layer, like #login,
+			   so custom text/links stay visible when a background is set. */
 			position:relative;
+			z-index:1;
+		}
+		.clc-above-form{
+			margin:0 0 16px;
+			order:-1;
+		}
+		.ml-form-container > .clc-custom-footer{
+			margin:16px 0 0;
+			order:1;
+		}
+		.ml-form-container > .privacy-policy-page-link{
+			order:2;
 		}
 		.ml-form-container > .language-switcher{
-			position:absolute;
-			left:0;
-			right:0;
-			bottom:24px;
-			margin:0;
-			text-align:center;
+			order:3;
+		}
+		.clc-footer-links{
+			margin:0 0 8px;
+		}
+		.clc-footer-links a{
+			color:inherit;
+			text-decoration:underline;
+		}
+		.clc-footer-sep{
+			opacity:.5;
+		}
+		.clc-footer-text{
+			font-size:13px;
+			opacity:.85;
 		}
 		#registerform #wp-submit{
 			float:none;
@@ -1438,7 +1585,9 @@ class Colorlib_Login_Customizer_CSS_Customization {
 		}
 		body .ml-form-container{
 			display:flex;
+			flex-wrap:wrap;
 			align-items:center;
+			align-content:center;
 			justify-content:center;
 		}
 		body:not( .ml-half-screen ) .ml-container .ml-extra-div{
